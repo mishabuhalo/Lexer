@@ -16,13 +16,14 @@ namespace Lexer
         private static string keyWords = @"^function\(?|^for\(?|^while\(?|^var\(?|^do\(?|^try\(?|^catch\(?";
         private static string operatorsRexEx = @"^(\=|\+|\/|\-|\*)$";
 
+
         private static List<string> words;
         private static List<Tokens> result = new List<Tokens>();
 
         public static List<string> keyWordList = new List<string>() { "function", "for", "var", "while", "do", "try", "catch"};
         public static List<string> operatorsList = new List<string>() { "+", "-", "/" , "*", "="};
 
-        public static List<Tokens> init(string input)
+        public static List<Tokens> init(string input, int option)
         {
             words = new List<string>();
             words.AddRange(getWords(input));
@@ -131,15 +132,33 @@ namespace Lexer
                 i--;
 
             }
+                printResult(option);
 
-            printResult();
             return result;
         }
 
-        public static void printResult()
+        public static void printResult(int option)
         {
-            foreach(var res in result)
-                res.printToken();
+            if (option == 1)
+            {
+                foreach (var res in result)
+                    res.printToken();
+            }
+            else if(option == 2)
+            {
+                foreach(TokensNames tokens in Enum.GetValues(typeof(TokensNames)))
+                {
+                    Console.WriteLine("Token name:" + Enum.GetName(typeof(TokensNames), tokens));
+                    for(int i = 0; i < result.Count(); i++)
+                    {
+                        if(Enum.GetName(typeof(TokensNames), result[i].tokensNames) == Enum.GetName(typeof(TokensNames), tokens))
+                        {
+                            Console.WriteLine("\"" +result[i].token + "\"");
+                        }
+                    
+                    }
+                }
+            }
         }
 
       
