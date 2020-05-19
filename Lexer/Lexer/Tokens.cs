@@ -8,7 +8,13 @@ namespace Lexer
 {
     public enum TokensNames
     {
-        Numbers
+        Number,
+        PunctuationMark,
+        ErrorToken,
+        KeyWord,
+        Expression,
+        Operator,
+        Variable
     }
 
     class Tokens
