@@ -9,7 +9,6 @@ namespace Lexer
     public enum TokensNames
     {
         Number,
-        PunctuationMark,
         ErrorToken,
         KeyWord,
         Expression,
