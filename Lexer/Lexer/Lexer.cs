@@ -11,10 +11,11 @@ namespace Lexer
     {
         private static string simpleNumberRegEx = @"^\d+($)";
         private static string eolRegEx = @"^(\d+|\w+);$";
-        private static string expressionFirst = @"(\=|\+|\\|\-|\*)?(\w+|\d+)(\=|\+|\\|\-|\*)";
-        private static string expressionSecond = @"(\=|\+|\\|\-|\*)(\w+|\d+)(\=|\+|\\|\-|\*)?";
-        private static string keyWords = @"^function\(?|^for\(?|^while\(?|^var\(?|^do\(?|^try\(?|^catch\(?";
-        private static string operatorsRexEx = @"^(\=|\+|\/|\-|\*)$";
+        private static string expressionFirstRegEx = @"(\=|\+|\\|\-|\*)?(\w+|\d+)(\=|\+|\\|\-|\*)";
+        private static string expressionSecondRegEx = @"(\=|\+|\\|\-|\*)(\w+|\d+)(\=|\+|\\|\-|\*)?";
+        private static string keyWordsRegEx = @"^function\(?|^for\(?|^while\(?|^var\(?|^do\(?|^try\(?|^catch\(?";
+        private static string operatorsRegEx = @"^(\=|\+|\/|\-|\*)$";
+        private static string attributesRegEx = @"^\w*\[""\w+""\]($|;)";
 
 
         private static List<string> words;
@@ -60,21 +61,69 @@ namespace Lexer
                     i--;
                     continue;
                 }
-                if (Regex.IsMatch(words[i], keyWords))
+                if (Regex.IsMatch(words[i], keyWordsRegEx))
                 {
                     result.Add(new Tokens(TokensNames.KeyWord, words[i]));
                     words.RemoveAt(i);
                     i--;
                     continue;
                 }
-                if(Regex.IsMatch(words[i],operatorsRexEx))
+                if(Regex.IsMatch(words[i],operatorsRegEx))
                  {
                     result.Add(new Tokens(TokensNames.Operator, words[i]));
                     words.RemoveAt(i);
                     i--;
                     continue;
                 }
-                if (Regex.IsMatch(words[i], expressionFirst)|| Regex.IsMatch(words[i], expressionSecond))
+                if(Regex.IsMatch(words[i], attributesRegEx, RegexOptions.IgnoreCase))
+                {
+                    string temp = "";
+                    bool objectFlag = true;
+                    for(int j = 0; j < words[i].Length; j++)
+                    {
+                        if(words[i][j]!='[' && words[i][j] !='"' && words[i][j]!=']' && words[i][j]!=';')
+                        {
+                            temp += words[i][j];
+                            continue;
+                        }
+                        if(temp!= "" && objectFlag)
+                        {
+                            result.Add(new Tokens(TokensNames.Object, temp));
+                            temp = "";
+                            objectFlag = false;
+                        }
+                        if(temp!="" && !objectFlag)
+                        {
+                            result.Add(new Tokens(TokensNames.Attribute, temp));
+                            temp = "";
+                        }
+                        if(words[i][j] == '[')
+                        {
+                            result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
+                            continue;
+                        }
+                        if (words[i][j] == '"')
+                        {
+                            result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
+                            continue;
+                        }
+                        if (words[i][j] == ']')
+                        {
+                            result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
+                            continue;
+                        }
+                        if(words[i][j] == ';')
+                        {
+                            result.Add(new Tokens(TokensNames.PunctuationMark, words[i][j].ToString()));
+                        }
+
+                    }
+
+                    words.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+                if (Regex.IsMatch(words[i], expressionFirstRegEx)|| Regex.IsMatch(words[i], expressionSecondRegEx))
                 {
                     string temp = "";
 

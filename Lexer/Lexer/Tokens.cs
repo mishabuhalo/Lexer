@@ -14,7 +14,10 @@ namespace Lexer
         KeyWord,
         Expression,
         Operator,
-        Variable
+        Variable,
+        Object,
+        SybmolLiteral,
+        Attribute
     }
 
     class Tokens

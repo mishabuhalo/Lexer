@@ -10,15 +10,16 @@ namespace Lexer
 
     class Program
     {
-        public static string input = "function () { for sdfsdkf a+b23+ 24214 +saf } -124+ var 7 432+34-2fdsgf while = 24do 124; ";
+        public static string input = "function () { for sdfsdkf a+b23+ 24214 +saf TestObject[\"attribute\"]  asfaf[\"fssa\"]; } -124+ var 7 432+34-2fdsgf while = 24do 124;" +
+            " asd[\"asd\"];";
 
 
         static void Main(string[] args)
         {
-            string temp = "-124+ 7";
+            //string temp = "-124+ 7";
             int option;
 
-            string numbersinExpression = @"\W*\d+\W*";
+           // string numbersinExpression = @"\W*\d+\W*";
 
             Console.WriteLine("This is input string = " + input);
             //Console.WriteLine("Temp = " + Regex.IsMatch(temp, numbersinExpression));
