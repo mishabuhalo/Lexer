@@ -11,7 +11,7 @@ namespace Lexer
     {
         private static string simpleNumberRegEx = @"^\d+($)";
         private static string simpleWordRegEx = @"^\w+$";
-        private static string wordWithLiteralsRegEx = @"^\w+(\)|;|\()$";
+        private static string wordWithLiteralsRegEx = @"^\w+(\)|;|\(|,)$";
         private static string eolRegEx = @"^(\d+|\w+);$";
         private static string expressionFirstRegEx = @"(\=|\+|\\|\-|\*)?(\w+|\d+)(\=|\+|\\|\-|\*)";
         private static string expressionSecondRegEx = @"(\=|\+|\\|\-|\*)(\w+|\d+)(\=|\+|\\|\-|\*)?";
@@ -19,6 +19,7 @@ namespace Lexer
         private static string operatorsRegEx = @"^(\=|\+|\/|\-|\*)$";
         private static string attributesRegEx = @"^\w*\[""\w+""\]($|;)";
         private static string literalsRegEx = @"^(\(|\)|\'|""|\[|\{|\}|\])$";
+        private static string punctualMarksRegEx = @"^(,|;)$";
 
 
         private static List<string> words;
@@ -32,7 +33,7 @@ namespace Lexer
             words = new List<string>();
             words.AddRange(getWords(input));
 
-            //prindWords();
+           // prindWords();
 
             for (int i = 0; i < words.Count(); i++)
             {
@@ -82,6 +83,8 @@ namespace Lexer
                                 flag = false;
                                 if (iskeyWord(temp))
                                     result.Add(new Tokens(TokensNames.KeyWord, temp));
+                                else if (isVariable(result, temp))
+                                    result.Add(new Tokens(TokensNames.Variable, temp));
                                 else
                                     result.Add(new Tokens(TokensNames.ErrorToken, temp));
                                 temp = "";
@@ -127,30 +130,11 @@ namespace Lexer
                             result.Add(new Tokens(TokensNames.Object, temp));
                             temp = "";
                         }
-                        if (temp != "" && !objectFlag)
-                        {
-                            result.Add(new Tokens(TokensNames.Attribute, temp));
-                            temp = "";
-                        }
-                        if (words[i][j] == '[')
-                        {
+                        if (Regex.IsMatch(words[i][j].ToString(), literalsRegEx))
                             result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
-                            continue;
-                        }
-                        if (words[i][j] == '"')
+                        if (Regex.IsMatch(words[i][j].ToString(), punctualMarksRegEx))
                         {
-                            result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
-                            objectFlag = false;
-                            continue;
-                        }
-                        if (words[i][j] == ']')
-                        {
-                            result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
-                            continue;
-                        }
-                        if (words[i][j] == ';')
-                        {
-                            result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
+                            result.Add(new Tokens(TokensNames.PunctuationMark, words[i][j].ToString()));
                         }
 
                     }
@@ -240,7 +224,13 @@ namespace Lexer
                         }
 
                         result.Add(new Tokens(TokensNames.Variable, temp));
-                        result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][words[i].Length-1].ToString()));
+                        if(Regex.IsMatch(words[i][words[i].Length - 1].ToString(), literalsRegEx))
+                            result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][words[i].Length-1].ToString()));
+                        else if(Regex.IsMatch(words[i][words[i].Length - 1].ToString(), punctualMarksRegEx))
+                        {
+
+                            result.Add(new Tokens(TokensNames.PunctuationMark, words[i][words[i].Length - 1].ToString()));
+                        }
                         words.RemoveAt(i);
                         i--;
                         continue;
@@ -271,7 +261,7 @@ namespace Lexer
             {
                 foreach (TokensNames tokens in Enum.GetValues(typeof(TokensNames)))
                 {
-                    Console.WriteLine("Token name:" + Enum.GetName(typeof(TokensNames), tokens));
+                    Console.WriteLine("Token name: " + Enum.GetName(typeof(TokensNames), tokens));
                     for (int i = 0; i < result.Count(); i++)
                     {
                         if (Enum.GetName(typeof(TokensNames), result[i].tokensNames) == Enum.GetName(typeof(TokensNames), tokens))
@@ -280,6 +270,7 @@ namespace Lexer
                         }
 
                     }
+                    Console.WriteLine();
                 }
             }
         }
@@ -287,7 +278,7 @@ namespace Lexer
 
         private static string[] getWords(string input)
         {
-            return input.Split(new[] { '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            return input.Split(new[] { '\n',' ' ,'\r'}, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private static void prindWords()

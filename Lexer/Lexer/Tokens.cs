@@ -16,6 +16,7 @@ namespace Lexer
         Variable,
         Object,
         SybmolLiteral,
+        PunctuationMark,
         Attribute
     }
 

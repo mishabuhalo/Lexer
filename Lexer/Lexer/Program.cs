@@ -4,25 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace Lexer
 {
 
     class Program
     {
-        public static string input = "function(var s) var testVariable \n{ for testVariable sdfsdkf a+testVariable+ 24214 +saf [\"testAttribute\"]; TestObject[\"attribute\"]  asfaf[\"fssa\"]; } -124+ var 7 432+34-2fdsgf while = 24do 124;" +
+        public static string input = "function(var s, var i) var testVariable \n{ for(testVariable) testVariable sdfsdkf a+testVariable+ 24214 +saf [\"testAttribute\"]; TestObject[\"attribute\"]  asfaf[\"fssa\"]; } -124+ var 7 432+34-2fdsgf while = 24do 124;" +
             " asd[\"asd\"]; testVariable";
 
 
         static void Main(string[] args)
         {
-            //string temp = "-124+ 7";
             int option;
 
-           // string numbersinExpression = @"\W*\d+\W*";
-
             Console.WriteLine("This is input string = " + input);
-            //Console.WriteLine("Temp = " + Regex.IsMatch(temp, numbersinExpression));
+
             Console.WriteLine("Please imput option for output:\n1)sequence of tokens\n2)tokens sorted by type\n");
             option = int.Parse(Console.ReadLine());
             Lexer.init(input, option);
