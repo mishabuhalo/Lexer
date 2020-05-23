@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace Lexer
 {
@@ -22,7 +23,7 @@ namespace Lexer
         private static string punctualMarksRegEx = @"^(,|;)$";
 
 
-        private static List<string> words;
+        private static List<string> words = new List<string>();
         private static List<Tokens> result = new List<Tokens>();
 
         public static List<string> keyWordList = new List<string>() { "function", "for", "var", "while", "do", "try", "catch" };
@@ -30,10 +31,9 @@ namespace Lexer
 
         public static List<Tokens> init(string input, int option)
         {
-            words = new List<string>();
-            words.AddRange(getWords(input));
+            getWords(input);
 
-           // prindWords();
+            prindWords();
 
             for (int i = 0; i < words.Count(); i++)
             {
@@ -57,6 +57,8 @@ namespace Lexer
                         result.Add(new Tokens(TokensNames.Number, temp));
                     else if (iskeyWord(temp))
                         result.Add(new Tokens(TokensNames.KeyWord, temp));
+                    else if (isVariable(result, temp))
+                        result.Add(new Tokens(TokensNames.Variable, temp));
                     else
                         result.Add(new Tokens(TokensNames.ErrorToken, temp));
 
@@ -100,6 +102,8 @@ namespace Lexer
                     {
                         if (iskeyWord(temp))
                             result.Add(new Tokens(TokensNames.KeyWord, temp));
+                        else if(isVariable(result, temp))
+                            result.Add(new Tokens(TokensNames.Variable, temp));
                         else
                             result.Add(new Tokens(TokensNames.ErrorToken, temp));
                     }
@@ -130,11 +134,20 @@ namespace Lexer
                             result.Add(new Tokens(TokensNames.Object, temp));
                             temp = "";
                         }
+                        if (temp != "" && !objectFlag)
+                        {
+                            result.Add(new Tokens(TokensNames.Attribute, temp));
+                            temp = "";
+                        }
                         if (Regex.IsMatch(words[i][j].ToString(), literalsRegEx))
+                        {
                             result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
+                            objectFlag = false;
+                        }
                         if (Regex.IsMatch(words[i][j].ToString(), punctualMarksRegEx))
                         {
                             result.Add(new Tokens(TokensNames.PunctuationMark, words[i][j].ToString()));
+                            objectFlag = false;
                         }
 
                     }
@@ -217,6 +230,7 @@ namespace Lexer
                     else if(Regex.IsMatch(words[i], wordWithLiteralsRegEx))
                     {
                         string temp = "";
+
                         for (int j = 0; j < words[i].Length; j++)
                         {
                             if (!Regex.IsMatch(words[i][j].ToString(), literalsRegEx))
@@ -224,6 +238,7 @@ namespace Lexer
                         }
 
                         result.Add(new Tokens(TokensNames.Variable, temp));
+
                         if(Regex.IsMatch(words[i][words[i].Length - 1].ToString(), literalsRegEx))
                             result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][words[i].Length-1].ToString()));
                         else if(Regex.IsMatch(words[i][words[i].Length - 1].ToString(), punctualMarksRegEx))
@@ -276,9 +291,11 @@ namespace Lexer
         }
 
 
-        private static string[] getWords(string input)
+        private static void getWords(string input)
         {
-            return input.Split(new[] { '\n',' ' ,'\r'}, StringSplitOptions.RemoveEmptyEntries);
+            string[] lines = File.ReadAllLines(input, Encoding.UTF8);
+            foreach(var line in lines)
+                 words.AddRange(line.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries));
         }
 
         private static void prindWords()

@@ -1,6 +1,0 @@
-﻿function(var s) 
-var testVariable { for(testVariable) testVariable sdfsdkf a+testVariable+ 24214 +saf 
-["testAttribute"]; TestObject["attribute"]  asfaf["fssa"]; } 
--124+ var 7 432+34-2fdsgf while = 24do 124;" +
-            " asd[\"asd\"]; 
-testVariable
