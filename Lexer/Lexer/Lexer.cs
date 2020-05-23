@@ -90,7 +90,6 @@ namespace Lexer
                         {
                             result.Add(new Tokens(TokensNames.Object, temp));
                             temp = "";
-                            objectFlag = false;
                         }
                         if(temp!="" && !objectFlag)
                         {
@@ -105,6 +104,7 @@ namespace Lexer
                         if (words[i][j] == '"')
                         {
                             result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
+                            objectFlag = false;
                             continue;
                         }
                         if (words[i][j] == ']')
