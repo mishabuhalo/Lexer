@@ -16,6 +16,7 @@ namespace Lexer
         private static string keyWordsRegEx = @"^function\(?|^for\(?|^while\(?|^var\(?|^do\(?|^try\(?|^catch\(?";
         private static string operatorsRegEx = @"^(\=|\+|\/|\-|\*)$";
         private static string attributesRegEx = @"^\w*\[""\w+""\]($|;)";
+        private static string literalsRegEx = @"(\(|\)|\'|""|\[|\{|\}|\])";
 
 
         private static List<string> words;
@@ -29,7 +30,7 @@ namespace Lexer
             words = new List<string>();
             words.AddRange(getWords(input));
 
-           // prindWords();
+            prindWords();
 
             for (int i = 0; i < words.Count(); i++)
             {
@@ -63,7 +64,34 @@ namespace Lexer
                 }
                 if (Regex.IsMatch(words[i], keyWordsRegEx))
                 {
-                    result.Add(new Tokens(TokensNames.KeyWord, words[i]));
+                    string temp = "";
+                    bool flag = true;
+                    for (int j = 0; j < words[i].Length; j++)
+                    {
+                        if (!Regex.IsMatch(words[i][j].ToString(), literalsRegEx) && flag)
+                        {
+                            temp += words[i][j];
+                            continue;
+                        }
+                        if(temp!="" || Regex.IsMatch(words[i][j].ToString(), literalsRegEx))
+                        {
+                            if (temp != "")
+                            {
+                                flag = false;
+                                result.Add(new Tokens(TokensNames.KeyWord, temp));
+                                temp = "";
+                            }
+                            if(Regex.IsMatch(words[i][j].ToString(), literalsRegEx))
+                            {
+                                result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
+                            }
+                        }
+                    }
+                    if(temp!="")
+                    {
+
+                        result.Add(new Tokens(TokensNames.KeyWord, temp));
+                    }
                     words.RemoveAt(i);
                     i--;
                     continue;
@@ -213,7 +241,7 @@ namespace Lexer
       
         private static string[] getWords(string input)
         {
-            return input.Split(new[] { ' '}, StringSplitOptions.RemoveEmptyEntries);
+            return input.Split(new[] { '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private static void prindWords()
