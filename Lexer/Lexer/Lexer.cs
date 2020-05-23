@@ -30,7 +30,7 @@ namespace Lexer
             words = new List<string>();
             words.AddRange(getWords(input));
 
-            prindWords();
+            //prindWords();
 
             for (int i = 0; i < words.Count(); i++)
             {
@@ -78,19 +78,25 @@ namespace Lexer
                             if (temp != "")
                             {
                                 flag = false;
-                                result.Add(new Tokens(TokensNames.KeyWord, temp));
+                                if (iskeyWord(temp))
+                                    result.Add(new Tokens(TokensNames.KeyWord, temp));
+                                else
+                                    result.Add(new Tokens(TokensNames.ErrorToken, temp));
                                 temp = "";
                             }
                             if(Regex.IsMatch(words[i][j].ToString(), literalsRegEx))
                             {
                                 result.Add(new Tokens(TokensNames.SybmolLiteral, words[i][j].ToString()));
+                                flag = true;
                             }
                         }
                     }
                     if(temp!="")
                     {
-
-                        result.Add(new Tokens(TokensNames.KeyWord, temp));
+                        if(iskeyWord(temp))
+                            result.Add(new Tokens(TokensNames.KeyWord, temp));
+                        else
+                            result.Add(new Tokens(TokensNames.ErrorToken, temp));
                     }
                     words.RemoveAt(i);
                     i--;
@@ -175,7 +181,7 @@ namespace Lexer
                                 result.Add(new Tokens(TokensNames.Number, temp));
                                 temp = "";
                             }
-                            else if(temp != "" && isVariable(temp))
+                            else if(temp != "" && isVariable(result, temp))
                             {
                                 result.Add(new Tokens(TokensNames.Variable, temp));
                                 temp = "";
@@ -204,9 +210,19 @@ namespace Lexer
                     continue;
                 }
 
-                result.Add(new Tokens(TokensNames.ErrorToken, words[i]));
-                words.RemoveAt(i);
-                i--;
+                if (result.Count() > 0 && isVariable(result, words[i]))
+                {
+                   result.Add(new Tokens(TokensNames.Variable, words[i]));
+                   words.RemoveAt(i);
+                   i--;
+                   continue;
+                }
+                else
+                {
+                    result.Add(new Tokens(TokensNames.ErrorToken, words[i]));
+                    words.RemoveAt(i);
+                    i--;
+                }
 
             }
                 printResult(option);
@@ -266,16 +282,6 @@ namespace Lexer
             }
             return flag;
         }
-        private static bool isVariable(string input)
-        {
-            bool flag = true;
-            for(int i = 0; i < input.Length; i++)
-            {
-                if (input[i] < 'a' || input[i] > 'z')
-                    flag = false;
-            }
-            return flag;
-        }
         
         private static bool isDigit(string input)
         {
@@ -297,6 +303,19 @@ namespace Lexer
                 }
             }
             return flag;
+        }
+
+        private static bool isVariable(List<Tokens> tokenList, string token)
+        {
+            if (tokenList[tokenList.Count() - 1].token == "var")
+                return true;
+
+            for (int i = 0; i < tokenList.Count(); i++)
+            {
+                if (tokenList[i].token == token && Enum.GetName(typeof(TokensNames), tokenList[i].tokensNames) == "Variable")
+                    return true;
+            }
+            return false;
         }
     }
 }

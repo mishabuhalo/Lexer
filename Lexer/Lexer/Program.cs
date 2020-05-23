@@ -10,8 +10,8 @@ namespace Lexer
 
     class Program
     {
-        public static string input = "function() \n{ for sdfsdkf a+b23+ 24214 +saf [\"testAttribute\"]; TestObject[\"attribute\"]  asfaf[\"fssa\"]; } -124+ var 7 432+34-2fdsgf while = 24do 124;" +
-            " asd[\"asd\"];";
+        public static string input = "function(var s) var testVariable \n{ for testVariable sdfsdkf a+b23+ 24214 +saf [\"testAttribute\"]; TestObject[\"attribute\"]  asfaf[\"fssa\"]; } -124+ var 7 432+34-2fdsgf while = 24do 124;" +
+            " asd[\"asd\"]; testVariable";
 
 
         static void Main(string[] args)
