@@ -21,6 +21,7 @@ namespace Lexer
         private static readonly string attributesRegEx = @"^\w*\[""\w+""\]($|;)";
         private static readonly string literalsRegEx = @"^(\(|\)|\'|""|\[|\{|\}|\])$";
         private static readonly string punctualMarksRegEx = @"^(,|;)$";
+        private static readonly string singeLineCommentRegEx = @"(^|\w*)\/\/(\w*|$)";
 
 
         private static List<string> words = new List<string>();
@@ -29,99 +30,13 @@ namespace Lexer
         public static List<string> keyWordList = new List<string>() { "function", "for", "var", "while", "do", "try", "catch" };
         public static List<string> operatorsList = new List<string>() { "+", "-", "/", "*", "=" };
 
+
         public static List<Tokens> init(string input, int option)
         {
             getWords(input);
 
             //prindWords();
 
-            for (int i = 0; i < words.Count(); i++)
-            {
-                if (Regex.IsMatch(words[i], simpleNumberRegEx))
-                {
-                    result.Add(new Tokens(TokensNames.Number, words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                if (Regex.IsMatch(words[i], eolRegEx))
-                {
-                    result.AddRange(TokenRecognition.EndOfLineTokens(words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                if (Regex.IsMatch(words[i], keyWordsRegEx))
-                {
-                    result.AddRange(TokenRecognition.KeyWordTokens(words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                if (Regex.IsMatch(words[i], operatorsRegEx))
-                {
-                    result.Add(new Tokens(TokensNames.Operator, words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                if (Regex.IsMatch(words[i], attributesRegEx, RegexOptions.IgnoreCase))
-                {
-                    result.AddRange(TokenRecognition.AttributeTokens(words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                if (Regex.IsMatch(words[i], expressionFirstRegEx) || Regex.IsMatch(words[i], expressionSecondRegEx))
-                {
-                    result.AddRange(TokenRecognition.ExpressionTokens(words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-
-                if (Regex.IsMatch(words[i], literalsRegEx))
-                {
-                    result.Add(new Tokens(TokensNames.SybmolLiteral, words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                if(Regex.IsMatch(words[i], punctualMarksRegEx))
-                {
-                    result.Add(new Tokens(TokensNames.PunctuationMark, words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-
-                if (result.Count() > 0 && TokenRecognition.isVariable(result, words[i]))
-                {
-                    if (Regex.IsMatch(words[i], simpleWordRegEx))
-                    {
-                        result.Add(new Tokens(TokensNames.Variable, words[i]));
-                        words.RemoveAt(i);
-                        i--;
-                        continue;
-                    }
-
-                    else if(Regex.IsMatch(words[i], wordWithLiteralsRegEx))
-                    {
-                        result.AddRange(TokenRecognition.VariableTokens(words[i]));
-                        words.RemoveAt(i);
-                        i--;
-                        continue;
-                    }
-                    
-                }
-                else
-                {
-                    result.Add(new Tokens(TokensNames.ErrorToken, words[i]));
-                    words.RemoveAt(i);
-                    i--;
-                }
-
-            }
             printResult(option);
 
             return result;
@@ -156,8 +71,100 @@ namespace Lexer
         private static void getWords(string input)
         {
             string[] lines = File.ReadAllLines(input, Encoding.UTF8);
-            foreach(var line in lines)
-                 words.AddRange(line.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries));
+
+            List<string> tempWords = new List<string>();
+            foreach (var line in lines)
+            {
+                if (Regex.IsMatch(line, singeLineCommentRegEx))
+                {
+                    result.AddRange(TokenRecognition.singleLineTokens(line));
+                }
+
+                else
+                {
+                    tempWords.Clear();
+                    //words.AddRange(line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+                    tempWords.AddRange(line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+                    foreach (var word in tempWords)
+                    {
+                        result.AddRange(recognize(word));
+                    }
+                }
+
+            }
+
+        }
+
+        public static List<Tokens> recognize(string word)
+        {
+            List<Tokens> result = new List<Tokens>();
+
+                if (Regex.IsMatch(word, simpleNumberRegEx))
+                {
+                    result.Add(new Tokens(TokensNames.Number, word));
+                   
+                }
+                if (Regex.IsMatch(word, eolRegEx))
+                {
+                    result.AddRange(TokenRecognition.EndOfLineTokens(word));
+                  
+                }
+                if (Regex.IsMatch(word, keyWordsRegEx))
+                {
+                    result.AddRange(TokenRecognition.KeyWordTokens(word));
+                   
+                }
+                if (Regex.IsMatch(word, operatorsRegEx))
+                {
+                    result.Add(new Tokens(TokensNames.Operator, word));
+                   
+                }
+                if (Regex.IsMatch(word, attributesRegEx, RegexOptions.IgnoreCase))
+                {
+                    result.AddRange(TokenRecognition.AttributeTokens(word));
+                   
+                }
+                if (Regex.IsMatch(word, expressionFirstRegEx) || Regex.IsMatch(word, expressionSecondRegEx))
+                {
+                    result.AddRange(TokenRecognition.ExpressionTokens(word));
+                   
+                }
+
+                if (Regex.IsMatch(word, literalsRegEx))
+                {
+                    result.Add(new Tokens(TokensNames.SybmolLiteral, word));
+                   
+                }
+                if (Regex.IsMatch(word, punctualMarksRegEx))
+                {
+                    result.Add(new Tokens(TokensNames.PunctuationMark, word));
+                   
+                }
+
+                if (result.Count() > 0 && TokenRecognition.isVariable(result, word))
+                {
+                    if (Regex.IsMatch(word, simpleWordRegEx))
+                    {
+                        result.Add(new Tokens(TokensNames.Variable, word));
+                        
+                    }
+
+                    else if (Regex.IsMatch(word, wordWithLiteralsRegEx))
+                    {
+                        result.AddRange(TokenRecognition.VariableTokens(word));
+                       
+                    }
+
+                }
+                else
+                {
+                    result.Add(new Tokens(TokensNames.ErrorToken, word));
+                    
+                }
+
+            return result;
         }
 
         private static void prindWords()
@@ -168,6 +175,6 @@ namespace Lexer
             }
         }
 
-        
+
     }
 }

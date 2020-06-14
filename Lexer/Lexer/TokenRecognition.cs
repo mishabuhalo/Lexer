@@ -208,6 +208,50 @@ namespace Lexer
             return result;
         }
 
+        public static List<Tokens> singleLineTokens(string line)
+        {
+            List<string> tempWords = new List<string>();
+            List<Tokens> result = new List<Tokens>();
+            string temp = "";
+            string tempLine = line;
+            for (int i = 0; i < line.Length - 1; i++)
+            {
+
+                if (line[i] == '/' && line[i + 1] == '/')
+                {
+                    tempWords.Clear();
+                    tempLine = line.Remove(0, temp.Length + 2);
+                    //words.AddRange(line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+                    List<string> comments = new List<string>();
+
+                    tempWords.Clear();
+                    tempWords.AddRange(temp.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                    comments.AddRange(tempLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+                    foreach (var word in tempWords)
+                    {
+                        result.AddRange(Lexer.recognize(word));
+                    }
+
+                    foreach (var comment in comments)
+                    {
+                        result.Add(new Tokens(TokensNames.CommentElement, comment));
+
+                    }
+
+                    break;
+                }
+                else
+                {
+                    temp += line[i];
+                    continue;
+                }
+            }
+
+            return result;
+        }
+
         private static bool iskeyWord(string input)
         {
             bool flag = false;

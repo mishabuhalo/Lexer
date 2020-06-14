@@ -17,7 +17,8 @@ namespace Lexer
         Object,
         SybmolLiteral,
         PunctuationMark,
-        Attribute
+        Attribute,
+        CommentElement
     }
 
     public class Tokens
