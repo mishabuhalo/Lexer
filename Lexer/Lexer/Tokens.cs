@@ -20,7 +20,7 @@ namespace Lexer
         Attribute
     }
 
-    class Tokens
+    public class Tokens
     {
         public TokensNames tokensNames;
         public string token;
