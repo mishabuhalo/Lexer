@@ -9,8 +9,8 @@ namespace Lexer
 {
     public static class TokenRecognition
     {
-        public static List<string> keyWordList = new List<string>() { "function", "for", "var", "while", "do", "try", "catch" };
-        public static List<string> operatorsList = new List<string>() { "+", "-", "/", "*", "=" };
+        public static List<string> keyWordList = new List<string>() { "function", "for", "var", "while", "do", "try", "catch", "if", "else" };
+        public static List<string> operatorsList = new List<string>() { "+", "-", "/", "*", "==", ">=", "<=", "&&", "||", "=",  "%", "<", ">" };
         private static string literalsRegEx = @"^(\(|\)|\'|""|\[|\{|\}|\])$";
         private static string punctualMarksRegEx = @"^(,|;)$";
         private static string wordWithLiteralsRegEx = @"^\w+(\)|;|\(|,)$";
@@ -29,7 +29,7 @@ namespace Lexer
                 result.Add(new Tokens(TokensNames.Number, temp));
             else if (iskeyWord(temp))
                 result.Add(new Tokens(TokensNames.KeyWord, temp));
-            else if (isVariable(result, temp))
+            else if (isVariable(Lexer.result, temp))
                 result.Add(new Tokens(TokensNames.Variable, temp));
             else
                 result.Add(new Tokens(TokensNames.ErrorToken, temp));
@@ -59,7 +59,7 @@ namespace Lexer
                         flag = false;
                         if (iskeyWord(temp))
                             result.Add(new Tokens(TokensNames.KeyWord, temp));
-                        else if (isVariable(result, temp))
+                        else if (isVariable(Lexer.result, temp))
                             result.Add(new Tokens(TokensNames.Variable, temp));
                         else
                             result.Add(new Tokens(TokensNames.ErrorToken, temp));
@@ -76,7 +76,7 @@ namespace Lexer
             {
                 if (iskeyWord(temp))
                     result.Add(new Tokens(TokensNames.KeyWord, temp));
-                else if (isVariable(result, temp))
+                else if (isVariable(Lexer.result, temp))
                     result.Add(new Tokens(TokensNames.Variable, temp));
                 else
                     result.Add(new Tokens(TokensNames.ErrorToken, temp));
@@ -132,14 +132,10 @@ namespace Lexer
 
             for (int j = 0; j < template.Length; j++)
             {
-                if (!isOperator(template[j]))
+                if (!isOperator(template[j].ToString()))
                 {
                     temp += template[j];
                     template = template.Remove(j, 1);
-                    if (j == template.Length)
-                    {
-
-                    }
                     j--;
                 }
 
@@ -150,7 +146,7 @@ namespace Lexer
                         result.Add(new Tokens(TokensNames.Number, temp));
                         temp = "";
                     }
-                    else if (temp != "" && isVariable(result, temp))
+                    else if (temp != "" && isVariable(Lexer.result, temp))
                     {
                         result.Add(new Tokens(TokensNames.Variable, temp));
                         temp = "";
@@ -161,9 +157,20 @@ namespace Lexer
                         temp = "";
 
                     }
-                    result.Add(new Tokens(TokensNames.Operator, template[j].ToString()));
-                    template = template.Remove(j, 1);
-                    j--;
+
+                    if (j +1 <= template.Length -1 && isOperator(template[j].ToString() + template[j + 1].ToString()))
+                    {
+
+                        result.Add(new Tokens(TokensNames.Operator, template[j].ToString() + template[j + 1].ToString()));
+                        template = template.Remove(j, 2);
+                        j --;
+                    }
+                    else
+                    {
+                        result.Add(new Tokens(TokensNames.Operator, template[j].ToString()));
+                        template = template.Remove(j, 1);
+                        j--;
+                    }
                 }
 
             }
@@ -189,7 +196,7 @@ namespace Lexer
 
                 for (int j = 0; j < template.Length; j++)
                 {
-                    if (!Regex.IsMatch(template[j].ToString(), literalsRegEx))
+                    if (!Regex.IsMatch(template[j].ToString(), literalsRegEx)&&!Regex.IsMatch(template[j].ToString(), punctualMarksRegEx))
                         temp += template[j];
                 }
 
@@ -208,7 +215,7 @@ namespace Lexer
             return result;
         }
 
-        public static List<Tokens> singleLineTokens(string line)
+        public static List<Tokens> singleLineCommentsToken(string line)
         {
             List<string> tempWords = new List<string>();
             List<Tokens> result = new List<Tokens>();
@@ -221,7 +228,6 @@ namespace Lexer
                 {
                     tempWords.Clear();
                     tempLine = line.Remove(0, temp.Length + 2);
-                    //words.AddRange(line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
 
                     List<string> comments = new List<string>();
 
@@ -275,12 +281,12 @@ namespace Lexer
             else return false;
         }
 
-        private static bool isOperator(char input)
+        private static bool isOperator(string input)
         {
             bool flag = false;
             for (int i = 0; i < operatorsList.Count(); i++)
             {
-                if (input.ToString() == operatorsList[i])
+                if (input == operatorsList[i])
                 {
                     flag = true;
                     break;
