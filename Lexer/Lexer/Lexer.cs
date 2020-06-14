@@ -22,7 +22,9 @@ namespace Lexer
         private static readonly string literalsRegEx = @"^(\(|\)|\'|""|\[|\{|\}|\])$";
         private static readonly string punctualMarksRegEx = @"^(,|;)$";
         private static readonly string singeLineCommentRegEx = @"(^|\w*)\/\/(\w*|$)";
-        private static readonly string multyLineCommentRegRx = @"(^|\w*)\/\*(\w*|$)";
+        private static readonly string multyLineCommentStartRegEx = @"(^|\w*)\/\*(\w*|$)";
+        private static readonly string multyLineCommentEndRegEx = @"(^|\w*)\*\/(\w*|$)";
+        private static readonly string multyCommentInOneLineRegEx = @"(^|\w*)\/\*\w*\*\/(\w*|$)";
 
 
         private static List<string> words = new List<string>();
@@ -71,11 +73,40 @@ namespace Lexer
             string[] lines = File.ReadAllLines(input, Encoding.UTF8);
 
             List<string> tempWords = new List<string>();
-            foreach (var line in lines)
+            int counter = 0;
+            for (int i = 0; i < lines.Length; i++)
             {
-                if (Regex.IsMatch(line, singeLineCommentRegEx))
+                if (Regex.IsMatch(lines[i], singeLineCommentRegEx))
                 {
-                    result.AddRange(TokenRecognition.singleLineCommentsToken(line));
+                    result.AddRange(TokenRecognition.singleLineCommentsToken(lines[i]));
+                }
+                else if (Regex.IsMatch(lines[i], multyLineCommentStartRegEx))
+                {
+
+                    string tempLine = lines[i];
+
+                    for (int j = i + 1; j < lines.Length; j++)
+                    {
+                        if (Regex.IsMatch(lines[j], multyLineCommentEndRegEx) || j == lines.Length - 1)
+                        {
+                            tempLine += " " + lines[j];
+
+                            if (tempLine.Length > 0)
+                            {
+                                result.AddRange(TokenRecognition.multyLineCommentTextTokens(tempLine));
+                                i += counter +1;
+                                tempLine = "";
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            tempLine += " " + lines[j];
+                            counter++;
+                        }
+                    }
+                    if (tempLine.Length > 0)
+                        result.AddRange(TokenRecognition.multyLineCommentTextTokens(tempLine));
                 }
 
                 else
@@ -83,7 +114,7 @@ namespace Lexer
                     tempWords.Clear();
                     //words.AddRange(line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
 
-                    tempWords.AddRange(line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                    tempWords.AddRange(lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
 
                     foreach (var word in tempWords)
                     {
@@ -105,7 +136,7 @@ namespace Lexer
 
                 return result;
             }
-            
+
             if (Regex.IsMatch(word, keyWordsRegEx))
             {
                 result.AddRange(TokenRecognition.KeyWordTokens(word));
@@ -146,7 +177,7 @@ namespace Lexer
                 if (Regex.IsMatch(word, simpleWordRegEx))
                 {
                     result.Add(new Tokens(TokensNames.Variable, word));
-                    
+
                 }
 
                 else if (Regex.IsMatch(word, wordWithLiteralsRegEx))

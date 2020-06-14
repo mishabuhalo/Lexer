@@ -257,6 +257,75 @@ namespace Lexer
 
             return result;
         }
+        public static List<Tokens> multyLineCommentTextTokens(string line)
+        {
+            List<Tokens> result = new List<Tokens>();
+            string startLine = "";
+            string endLine = "";
+            string commentsLine = "";
+
+            List<string> startTokens = new List<string>();
+            List<string> commentsTokens = new List<string>();
+            List<string> endTokens = new List<string>();
+
+            string templine = line;
+            
+
+            for (int i = 0; i < line.Length-1; i ++)
+            {
+                if(line[i] == '/' && line[i+1] == '*')
+                {
+
+                    startTokens.Clear();
+                    templine = templine.Remove(0, startLine.Length + 2);
+
+                    for(int j = 0; j < templine.Length-1; j++)
+                    {
+                        if(templine[j] == '*' && templine[j+1] == '/')
+                        {
+                            templine = templine.Remove(0, commentsLine.Length +2);
+
+                            endLine = templine;
+                        }
+
+                        else
+                        {
+                            commentsLine += templine[j];
+                            continue;
+                        }
+                    }
+                    break;
+                    
+                }
+
+                else
+                {
+                    startLine += line[i];
+                    continue;
+                }
+            }
+
+            startTokens.AddRange(startLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+            commentsTokens.AddRange(commentsLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+            endTokens.AddRange(endLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+            foreach(var token in startTokens)
+            {
+                result.AddRange(Lexer.recognize(token));
+            }
+
+            foreach(var token in commentsTokens)
+            {
+                result.Add(new Tokens(TokensNames.CommentElement, token));
+            }
+
+            foreach(var token in endTokens)
+            {
+                result.AddRange(Lexer.recognize(token));
+            }
+
+            return result;
+        }
 
         private static bool iskeyWord(string input)
         {
